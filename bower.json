@@ -1,7 +1,7 @@
 {
-  "name": "timing",
+  "name": "raf-timing",
   "version": "0.0.0",
-  "homepage": "https://github.com/AriaMinaei/timing",
+  "homepage": "https://github.com/AriaMinaei/raf-timing",
   "authors": [
     "Aria <aria.minaei@gmail.com>"
   ],

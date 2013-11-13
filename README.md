@@ -1,1 +1,1 @@
-Timing api for high perf animations (experimental)
+Timing api based on raf for high perf animations (experimental)

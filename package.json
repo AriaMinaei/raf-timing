@@ -1,5 +1,5 @@
 {
-  "name": "timing",
+  "name": "raf-timing",
   "version": "0.0.0",
   "description": "",
   "main": "scripts/js/lib/timing.js",
