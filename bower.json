@@ -1,0 +1,22 @@
+{
+  "name": "timing",
+  "version": "0.0.0",
+  "authors": [
+    "Aria <aria.minaei@gmail.com>"
+  ],
+  "main": "scripts/js/lib/timing.js",
+  "keywords": [
+    "animation",
+    "setTimeout",
+    "setInterval",
+    "requestAnimationFrame"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
