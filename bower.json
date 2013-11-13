@@ -1,16 +1,11 @@
 {
   "name": "timing",
   "version": "0.0.0",
+  "homepage": "https://github.com/AriaMinaei/timing",
   "authors": [
     "Aria <aria.minaei@gmail.com>"
   ],
   "main": "scripts/js/lib/timing.js",
-  "keywords": [
-    "animation",
-    "setTimeout",
-    "setInterval",
-    "requestAnimationFrame"
-  ],
   "license": "MIT",
   "ignore": [
     "**/.*",
