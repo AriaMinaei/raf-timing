@@ -20,33 +20,33 @@ module.exports = class Timing
 
 		@_cancelNextFrame = _cancelNextFrame
 
-		@time: 0
+		@time = 0
 
-		@timeInMs: 0
+		@timeInMs = 0
 
-		@speed: 1
+		@speed = 1
 
-		@_toCallOnNextTick: []
+		@_toCallOnNextTick = []
 
-		@_nextTickTimeout: null
+		@_nextTickTimeout = null
 
-		@_toCallLaterAfterFrame: []
+		@_toCallLaterAfterFrame = []
 
-		@_toCallOnFrame: []
+		@_toCallOnFrame = []
 
-		@_toCallOnFrames: []
+		@_toCallOnFrames = []
 
-		@_toCancelCallingOnFrame: []
+		@_toCancelCallingOnFrame = []
 
-		@_toCallAfterFrames: []
+		@_toCallAfterFrames = []
 
-		@_toCancelCallingAfterFrames: []
+		@_toCancelCallingAfterFrames = []
 
-		@_waitCallbacks: []
+		@_waitCallbacks = []
 
-		@_intervals: []
+		@_intervals = []
 
-		@_toRemoveFromIntervals: []
+		@_toRemoveFromIntervals = []
 
 		@_rafId = 0
 
@@ -55,6 +55,8 @@ module.exports = class Timing
 			@_theLoop t
 
 			return
+
+		@_started = no
 
 	nextTick: (fn) ->
 
@@ -305,10 +307,16 @@ module.exports = class Timing
 
 	start: ->
 
+		return if @_started
+
 		@_rafId = @_nextFrame @_boundTheLoop
 
 		return
 
 	stop: ->
 
+		return if not @_started
+
 		@_cancelNextFrame @_rafId
+
+		return
