@@ -6,6 +6,12 @@ intervalPool = require './pool/interval'
 
 module.exports = class Timing
 
+	@requestAnimationFrame: request
+
+	@cancelAnimationFrame: cancel
+
+	@getTime: getTime
+
 	constructor: (nextFrame = _nextFrame, cancelNextFrame = _cancelNextFrame) ->
 
 		unless typeof nextFrame is 'function'
@@ -281,9 +287,15 @@ module.exports = class Timing
 
 	_theLoop: (t) ->
 
-		t = t * @speed
-
 		@_rafId = @_nextFrame @_boundTheLoop
+
+		@tick t
+
+		return
+
+	tick: (t) ->
+
+		t = t * @speed
 
 		@time = t
 
