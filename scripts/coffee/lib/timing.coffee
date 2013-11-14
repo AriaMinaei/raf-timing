@@ -56,9 +56,11 @@ module.exports = class Timing
 
 		@_rafId = 0
 
-		@_boundTheLoop = (t) =>
+		@_tickNumber = 0
 
-			@_theLoop t
+		@_boundLoop = (t) =>
+
+			@_loop t
 
 			return
 
@@ -86,6 +88,7 @@ module.exports = class Timing
 
 		toCallNow = @_toCallOnNextTick
 
+		# todo: reuse an existing array instead of creating one
 		@_toCallOnNextTick = []
 
 		for fn in toCallNow
@@ -285,15 +288,17 @@ module.exports = class Timing
 
 		return
 
-	_theLoop: (t) ->
+	_loop: (t) ->
 
-		@_rafId = @_nextFrame @_boundTheLoop
+		@_rafId = @_nextFrame @_boundLoop
 
 		@tick t
 
 		return
 
 	tick: (t) ->
+
+		@tickNumber++
 
 		t = t * @speed
 
@@ -321,7 +326,7 @@ module.exports = class Timing
 
 		return if @_started
 
-		@_rafId = @_nextFrame @_boundTheLoop
+		@_rafId = @_nextFrame @_boundLoop
 
 		return
 
