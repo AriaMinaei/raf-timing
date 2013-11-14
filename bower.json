@@ -1,11 +1,11 @@
 {
   "name": "raf-timing",
-  "version": "0.1.0",
+  "version": "0.2.0-beta",
   "homepage": "https://github.com/AriaMinaei/raf-timing",
   "authors": [
     "Aria <aria.minaei@gmail.com>"
   ],
-  "main": "scripts/js/lib/timing.js",
+  "main": "scripts/js/lib/Timing.js",
   "license": "MIT",
   "ignore": [
     "**/.*",
