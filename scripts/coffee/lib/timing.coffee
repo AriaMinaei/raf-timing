@@ -1,194 +1,196 @@
 {array} = require 'utila'
+getTime = require './getTime'
 timeoutPool = require './pool/timeout'
 intervalPool = require './pool/interval'
+{request, cancel} = require './raf'
 
-getTime = do ->
+module.exports = class Timing
 
-	if performance? and performance.now?
+	constructor: (nextFrame = _nextFrame, cancelNextFrame = _cancelNextFrame) ->
 
-		return -> performance.now()
+		unless typeof nextFrame is 'function'
 
-	else
+			throw Error "nextFrame needs to be a function. Leave null for requestAnimationFrame"
 
-		return Date.now() - 1372763687107
+		unless typeof cancelNextFrame is 'function'
 
-_nextFrame = do ->
+			throw Error "cancelNextFrame needs to be a function. Leave null for cancelRequestAnimationFrame"
 
-	return window.requestAnimationFrame if window.requestAnimationFrame
+		@_nextFrame = nextFrame
 
-	return window.mozRequestAnimationFrame if window.mozRequestAnimationFrame
+		@_cancelNextFrame = _cancelNextFrame
 
-	return window.webkitRequestAnimationFrame if window.webkitRequestAnimationFrame
+		@time: 0
 
-_cancelNextFrame = do ->
+		@timeInMs: 0
 
-	return window.cancelAnimationFrame if window.cancelAnimationFrame
+		@speed: 1
 
-	return window.mozCancelAnimationFrame if window.mozCancelAnimationFrame
+		@_toCallOnNextTick: []
 
-	return window.webkitCancelAnimationFrame if window.webkitCancelAnimationFrame
+		@_nextTickTimeout: null
 
-module.exports = timing =
+		@_toCallLaterAfterFrame: []
 
-	getTime: getTime
+		@_toCallOnFrame: []
 
-	time: 0
+		@_toCallOnFrames: []
 
-	timeInMs: 0
+		@_toCancelCallingOnFrame: []
 
-	speed: 1
+		@_toCallAfterFrames: []
 
-	_toCallOnNextTick: []
+		@_toCancelCallingAfterFrames: []
 
-	_nextTickTimeout: null
+		@_waitCallbacks: []
+
+		@_intervals: []
+
+		@_toRemoveFromIntervals: []
+
+		@_rafId = 0
+
+		@_boundTheLoop = (t) =>
+
+			@_theLoop t
+
+			return
 
 	nextTick: (fn) ->
 
-		timing._toCallOnNextTick.push fn
+		@_toCallOnNextTick.push fn
 
-		unless timing._nextTickTimeout
+		unless @_nextTickTimeout
 
-			timing._nextTickTimeout = setTimeout =>
+			@_nextTickTimeout = setTimeout =>
 
-				do timing._callTick
+				do @_callTick
 
 			, 0
 
-		null
+		return
 
 	_callTick: ->
 
-		return if timing._toCallOnNextTick.length < 1
+		return if @_toCallOnNextTick.length < 1
 
-		timing._nextTickTimeout = null
+		@_nextTickTimeout = null
 
-		toCallNow = timing._toCallOnNextTick
+		toCallNow = @_toCallOnNextTick
 
-		timing._toCallOnNextTick = []
+		@_toCallOnNextTick = []
 
 		for fn in toCallNow
 
 			do fn
 
-		null
-
-	_toCallLaterAfterFrame: []
+		return
 
 	afterFrame: (fn) ->
 
-		timing._toCallLaterAfterFrame.push fn
+		@_toCallLaterAfterFrame.push fn
 
-		null
+		return
 
 	_callFramesScheduledForAfterFrame: (t) ->
 
-		return if timing._toCallLaterAfterFrame.length < 1
+		return if @_toCallLaterAfterFrame.length < 1
 
 		loop
 
-			return if timing._toCallLaterAfterFrame.length < 1
+			return if @_toCallLaterAfterFrame.length < 1
 
-			toCall = timing._toCallLaterAfterFrame
+			toCall = @_toCallLaterAfterFrame
 
-			timing._toCallLaterAfterFrame = []
+			@_toCallLaterAfterFrame = []
 
 			for fn in toCall
 
 				fn t
 
-		null
-
-	_toCallOnFrame: []
+		return
 
 	frame: (fn) ->
 
-		timing._toCallOnFrame.push fn
+		@_toCallOnFrame.push fn
 
-		null
+		return
 
 	cancelFrame: (fn) ->
 
-		array.pluckOneItem timing._toCallOnFrame, fn
+		array.pluckOneItem @_toCallOnFrame, fn
 
-		null
+		return
 
 	_callFramesScheduledForFrame: (t) ->
 
-		return if timing._toCallOnFrame.length < 1
+		return if @_toCallOnFrame.length < 1
 
-		toCallNow = timing._toCallOnFrame
+		toCallNow = @_toCallOnFrame
 
-		timing._toCallOnFrame = []
+		@_toCallOnFrame = []
 
 		for fn in toCallNow
 
 			fn t
 
-		null
-
-	_toCallOnFrames: []
-
-	_toCancelCallingOnFrame: []
+		return
 
 	frames: (fn) ->
 
-		timing._toCallOnFrames.push fn
+		@_toCallOnFrames.push fn
 
-		null
+		return
 
 	cancelFrames: (fn) ->
 
-		timing._toCancelCallingOnFrame.push fn
+		@_toCancelCallingOnFrame.push fn
 
-		null
+		return
 
 	_callFramesScheduledForFrames: (t) ->
 
-		return if timing._toCallOnFrames.length < 1
+		return if @_toCallOnFrames.length < 1
 
-		for toCancel in timing._toCancelCallingOnFrame
+		for toCancel in @_toCancelCallingOnFrame
 
-			array.pluckOneItem timing._toCallOnFrames, toCancel
+			array.pluckOneItem @_toCallOnFrames, toCancel
 
-		timing._toCancelCallingOnFrame.length = 0
+		@_toCancelCallingOnFrame.length = 0
 
-		for fn in timing._toCallOnFrames
+		for fn in @_toCallOnFrames
 
 			fn t
 
 		return
 
-	_toCallAfterFrames: []
-
-	_toCancelCallingAfterFrames: []
-
 	afterFrames: (fn) ->
 
-		timing._toCallAfterFrames.push fn
+		@_toCallAfterFrames.push fn
 
-		null
+		return
 
 	cancelAfterFrames: (fn) ->
 
-		timing._toCancelCallingAfterFrames.push fn
+		@_toCancelCallingAfterFrames.push fn
 
-		null
+		return
 
 	_callAfterFrames: (t) ->
 
-		return if timing._toCallAfterFrames.length < 1
+		return if @_toCallAfterFrames.length < 1
 
-		for toCancel in timing._toCancelCallingAfterFrames
+		for toCancel in @_toCancelCallingAfterFrames
 
-			array.pluckOneItem timing._toCallAfterFrames, toCancel
+			array.pluckOneItem @_toCallAfterFrames, toCancel
 
-		timing._toCancelCallingAfterFrames.length = 0
+		@_toCancelCallingAfterFrames.length = 0
 
-		for fn in timing._toCallAfterFrames
+		for fn in @_toCallAfterFrames
 
 			fn t
 
-		null
+		return
 
 	__shouldInjectCallItem: (itemA, itemB, itemToInject) ->
 
@@ -208,68 +210,62 @@ module.exports = timing =
 
 		return no
 
-	_waitCallbacks: []
-
 	wait: (ms, fn) ->
 
-		callTime = timing.timeInMs + ms + 8
+		callTime = @timeInMs + ms + 8
 
 		item = timeoutPool.give callTime, fn
 
-		array.injectByCallback timing._waitCallbacks, item, timing.__shouldInjectCallItem
+		array.injectByCallback @_waitCallbacks, item, @__shouldInjectCallItem
 
-		null
+		return
 
 	_callWaiters: (t) ->
 
-		return if timing._waitCallbacks.length < 1
+		return if @_waitCallbacks.length < 1
 
 		loop
 
-			return if timing._waitCallbacks.length < 1
+			return if @_waitCallbacks.length < 1
 
-			item = timing._waitCallbacks[0]
+			item = @_waitCallbacks[0]
 
-			return if item.time > timing.timeInMs
+			return if item.time > @timeInMs
 
 			timeoutPool.take item
 
-			timing._waitCallbacks.shift()
+			@_waitCallbacks.shift()
 
 			item.fn t
 
-		null
-
-	_intervals: []
-
-	_toRemoveFromIntervals: []
+		return
 
 	every: (ms, fn) ->
 
-		timing._intervals.push intervalPool.give ms, timing.timeInMs, 0, fn
+		@_intervals.push intervalPool.give ms, @timeInMs, 0, fn
 
-		null
+		return
 
 	cancelEvery: (fn) ->
 
-		timing._toRemoveFromIntervals.push fn
+		@_toRemoveFromIntervals.push fn
 
-		null
+		return
 
 	_callIntervals: ->
 
-		return if timing._intervals.length < 1
+		return if @_intervals.length < 1
 
-		t = timing.timeInMs
+		t = @timeInMs
 
-		for fnToRemove in timing._toRemoveFromIntervals
+		for fnToRemove in @_toRemoveFromIntervals
 
-			array.pluckByCallback timing._intervals, (item) ->
+			array.pluckByCallback @_intervals, (item) ->
 
 				return yes if item.fn is fnToRemove
 				return no
 
-		for item in timing._intervals
+		for item in @_intervals
 
 			properTimeToCall = item.from + (item.timesCalled * item.every) + item.every
 
@@ -283,44 +279,36 @@ module.exports = timing =
 
 	_theLoop: (t) ->
 
-		t = t * timing.speed
+		t = t * @speed
 
-		_nextFrame timing._theLoop
+		@_rafId = @_nextFrame @_boundTheLoop
 
-		timing.time = t
+		@time = t
 
 		t = parseInt t
 
-		timing.timeInMs = t
+		@timeInMs = t
 
-		timing._callFramesScheduledForFrame t
+		@_callFramesScheduledForFrame t
 
-		timing._callFramesScheduledForFrames t
+		@_callFramesScheduledForFrames t
 
-		timing._callAfterFrames t
+		@_callAfterFrames t
 
-		timing._callFramesScheduledForAfterFrame t
+		@_callFramesScheduledForAfterFrame t
 
-		timing._callWaiters t
+		@_callWaiters t
 
-		timing._callIntervals t
+		@_callIntervals t
 
-		null
+		return
 
 	start: ->
 
-		_nextFrame timing._theLoop
+		@_rafId = @_nextFrame @_boundTheLoop
 
-		null
+		return
 
-timing.dontStart = do ->
+	stop: ->
 
-	frame = _nextFrame ->
-
-		timing.start()
-
-	dontStart = ->
-
-		_cancelNextFrame frame
-
-timing
+		@_cancelNextFrame @_rafId
