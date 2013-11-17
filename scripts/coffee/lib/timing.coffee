@@ -12,7 +12,7 @@ module.exports = class Timing
 
 	@getTime: getTime
 
-	constructor: (nextFrame = _nextFrame, cancelNextFrame = _cancelNextFrame) ->
+	constructor: (nextFrame = request, cancelNextFrame = cancel) ->
 
 		unless typeof nextFrame is 'function'
 
@@ -24,7 +24,7 @@ module.exports = class Timing
 
 		@_nextFrame = nextFrame
 
-		@_cancelNextFrame = _cancelNextFrame
+		@_cancelNextFrame = cancelNextFrame
 
 		@time = 0
 
