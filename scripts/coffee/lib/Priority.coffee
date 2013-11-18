@@ -4,31 +4,31 @@ module.exports = class Priority
 
 	constructor: ->
 
-		@_toCallOnce = []
+		@_singles = []
 
-		@_toCallContinously = []
+		@_series = []
 
-		@_toCancelCallingContinously = []
+		@_toCancelFromEachTick = []
 
-	once: (fn) ->
+	onNextTick: (fn) ->
 
-		@_toCallOnce.push fn
-
-		return
-
-	cancelOnce: (fn) ->
-
-		array.pluckOneItem @_toCallOnce, fn
+		@_singles.push fn
 
 		return
 
-	_callOnces: (t) ->
+	cancelFromNextTick: (fn) ->
 
-		return if @_toCallOnce.length < 1
+		array.pluckOneItem @_singles, fn
 
-		toCallNow = @_toCallOnce
+		return
 
-		@_toCallOnce = []
+	_callSingles: (t) ->
+
+		return if @_singles.length < 1
+
+		toCallNow = @_singles
+
+		@_singles = []
 
 		for fn in toCallNow
 
@@ -36,29 +36,29 @@ module.exports = class Priority
 
 		return
 
-	continous: (fn) ->
+	onEachTick: (fn) ->
 
-		@_toCallContinously.push fn
-
-		return
-
-	cancelContinous: (fn) ->
-
-		@_toCancelCallingContinously.push fn
+		@_series.push fn
 
 		return
 
-	_callContinous: (t) ->
+	cancelFromEachTick: (fn) ->
 
-		return if @_toCallContinously.length < 1
+		@_toCancelFromEachTick.push fn
 
-		for toCancel in @_toCancelCallingContinously
+		return
 
-			array.pluckOneItem @_toCallContinously, toCancel
+	_callSeries: (t) ->
 
-		@_toCancelCallingContinously.length = 0
+		return if @_series.length < 1
 
-		for fn in @_toCallContinously
+		for toCancel in @_toCancelFromEachTick
+
+			array.pluckOneItem @_series, toCancel
+
+		@_toCancelFromEachTick.length = 0
+
+		for fn in @_series
 
 			fn t
 
@@ -66,8 +66,8 @@ module.exports = class Priority
 
 	tick: (t) ->
 
-		@_callOnces t
+		@_callSingles t
 
-		@_callContinous t
+		@_callSeries t
 
 		return

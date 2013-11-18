@@ -1,6 +1,6 @@
 module.exports =
 
-	request: do ->
+	requestAnimationFrame: do ->
 
 		return window.requestAnimationFrame.bind(window) if window.requestAnimationFrame
 
@@ -10,7 +10,7 @@ module.exports =
 
 		throw Error "This environment does not support requestAnimationFrame, and no, we're not gonna fall back to setTimeout()!"
 
-	cancel: do ->
+	cancelAnimationFrame: do ->
 
 		return window.cancelAnimationFrame.bind(window) if window.cancelAnimationFrame
 

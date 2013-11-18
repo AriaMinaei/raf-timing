@@ -1,17 +1,19 @@
 getTime = require './getTime'
-{request, cancel} = require './raf'
+raf = require './raf'
 nextTick = require './nextTick'
 Waiter = require './Waiter'
 
 module.exports = class Timing
 
-	@requestAnimationFrame: request
+	self = @
 
-	@cancelAnimationFrame: cancel
+	@requestAnimationFrame: raf.requestAnimationFrame
+
+	@cancelAnimationFrame: raf.cancelAnimationFrame
 
 	@getTime: getTime
 
-	constructor: (nextFrame = request, cancelNextFrame = cancel) ->
+	constructor: (nextFrame = self.requestAnimationFrame, cancelNextFrame = self.cancelNextFrame) ->
 
 		unless typeof nextFrame is 'function'
 
@@ -90,14 +92,6 @@ module.exports = class Timing
 		t = parseInt t
 
 		@timeInMs = t
-
-		@_callFramesScheduledForFrame t
-
-		@_callFramesScheduledForFrames t
-
-		@_callAfterFrames t
-
-		@_callFramesScheduledForAfterFrame t
 
 		@_waiter.tick t
 
