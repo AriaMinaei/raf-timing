@@ -1,6 +1,6 @@
 Waiter = require './Waiter'
-getTime = require './getTime'
 nextTick = require './nextTick'
+Priority = require './Priority'
 {requestAnimationFrame, cancelAnimationFrame} = require './raf'
 
 module.exports = class Timing
@@ -9,9 +9,9 @@ module.exports = class Timing
 
 	constructor: ->
 
-		@time = 0
+		@nanoTime = 0
 
-		@timeInMs = 0
+		@time = 0
 
 		@speed = 1
 
@@ -29,6 +29,13 @@ module.exports = class Timing
 
 		@_started = no
 
+
+		@_before = new Priority
+
+		@_on = new Priority
+
+		@_after = new Priority
+
 	nextTick: (fn) ->
 
 		nextTick fn
@@ -37,7 +44,7 @@ module.exports = class Timing
 
 	wait: (ms, fn) ->
 
-		callTime = @timeInMs + ms + 8
+		callTime = @time + ms + 8
 
 		@_waiter.setTimeout callTime, fn
 
@@ -45,13 +52,85 @@ module.exports = class Timing
 
 	every: (ms, fn) ->
 
-		@_waiter.setInterval ms, fn, @timeInMs
+		@_waiter.setInterval ms, fn, @time
 
 		return
 
 	cancelEvery: (fn) ->
 
 		@_waiter.cancelInterval fn
+
+		return
+
+	beforeNextFrame: (fn) ->
+
+		@_before.onNextTick fn
+
+		return
+
+	cancelBeforeNextFrame: (fn) ->
+
+		@_before.cancelNextTick fn
+
+		return
+
+	beforeEachFrame: (fn) ->
+
+		@_before.onEachTick fn
+
+		return
+
+	cancelBeforeEachFrame: (fn) ->
+
+		@_before.cancelEachTick fn
+
+		return
+
+	onNextFrame: (fn) ->
+
+		@_on.onNextTick fn
+
+		return
+
+	cancelOnNextFrame: (fn) ->
+
+		@_on.cancelNextTick fn
+
+		return
+
+	onEachFrame: (fn) ->
+
+		@_on.onEachTick fn
+
+		return
+
+	cancelOnEachFrame: (fn) ->
+
+		@_on.cancelEachTick fn
+
+		return
+
+	afterNextFrame: (fn) ->
+
+		@_after.onNextTick fn
+
+		return
+
+	cancelAfterNextFrame: (fn) ->
+
+		@_after.cancelNextTick fn
+
+		return
+
+	afterEachFrame: (fn) ->
+
+		@_after.onEachTick fn
+
+		return
+
+	cancelAfterEachFrame: (fn) ->
+
+		@_after.cancelEachTick fn
 
 		return
 
@@ -69,13 +148,19 @@ module.exports = class Timing
 
 		t = t * @speed
 
-		@time = t
+		@nanoTime = t
 
 		t = parseInt t
 
-		@timeInMs = t
+		@time = t
 
 		@_waiter.tick t
+
+		@_before.tick t
+
+		@_on.tick t
+
+		@_after.tick t
 
 		return
 

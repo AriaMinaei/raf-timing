@@ -28,13 +28,11 @@ module.exports = class Waiter
 
 		return if @_timeouts.length < 1
 
-		loop
-
-			return if @_timeouts.length < 1
+		while @_timeouts.length
 
 			item = @_timeouts[0]
 
-			return if item.time > @timeInMs
+			return if item.time > t
 
 			timeoutPool.take item
 
