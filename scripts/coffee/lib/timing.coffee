@@ -1,31 +1,13 @@
-getTime = require './getTime'
-raf = require './raf'
-nextTick = require './nextTick'
 Waiter = require './Waiter'
+getTime = require './getTime'
+nextTick = require './nextTick'
+{requestAnimationFrame, cancelAnimationFrame} = require './raf'
 
 module.exports = class Timing
 
 	self = @
 
-	@requestAnimationFrame: raf.requestAnimationFrame
-
-	@cancelAnimationFrame: raf.cancelAnimationFrame
-
-	@getTime: getTime
-
-	constructor: (nextFrame = self.requestAnimationFrame, cancelNextFrame = self.cancelNextFrame) ->
-
-		unless typeof nextFrame is 'function'
-
-			throw Error "nextFrame needs to be a function. Leave null for requestAnimationFrame"
-
-		unless typeof cancelNextFrame is 'function'
-
-			throw Error "cancelNextFrame needs to be a function. Leave null for cancelRequestAnimationFrame"
-
-		@_nextFrame = nextFrame
-
-		@_cancelNextFrame = cancelNextFrame
+	constructor: ->
 
 		@time = 0
 
@@ -57,25 +39,25 @@ module.exports = class Timing
 
 		callTime = @timeInMs + ms + 8
 
-		@_waiter.schedule callTime, fn
+		@_waiter.setTimeout callTime, fn
 
 		return
 
 	every: (ms, fn) ->
 
-		@_waiter.every ms, fn, @timeInMs
+		@_waiter.setInterval ms, fn, @timeInMs
 
 		return
 
 	cancelEvery: (fn) ->
 
-		@_waiter.cancelEvery fn
+		@_waiter.cancelInterval fn
 
 		return
 
 	_loop: (t) ->
 
-		@_rafId = @_nextFrame @_boundLoop
+		@_rafId = requestAnimationFrame @_boundLoop
 
 		@tick t
 
@@ -101,7 +83,7 @@ module.exports = class Timing
 
 		return if @_started
 
-		@_rafId = @_nextFrame @_boundLoop
+		@_rafId = requestAnimationFrame @_boundLoop
 
 		return
 
@@ -109,6 +91,6 @@ module.exports = class Timing
 
 		return if not @_started
 
-		@_cancelNextFrame @_rafId
+		cancelAnimationFrame @_rafId
 
 		return

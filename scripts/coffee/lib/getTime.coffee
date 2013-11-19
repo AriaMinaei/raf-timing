@@ -1,3 +1,5 @@
+startTime = Date.now()
+
 module.exports = getTime = do ->
 
 	if performance? and performance.now?
@@ -6,4 +8,4 @@ module.exports = getTime = do ->
 
 	else
 
-		return Date.now() - 1372763687107
+		return Date.now() - startTime

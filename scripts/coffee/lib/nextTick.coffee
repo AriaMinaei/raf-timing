@@ -1,3 +1,5 @@
+nextTickTimeout = null
+
 module.exports = (fn) ->
 
 	toCallOnNextTick.push fn
@@ -19,6 +21,7 @@ nextTick = do ->
 
 		return (cb) -> setImmediate cb
 
+	# todo: there was a polyfill for chrome that simulated setImmediate...
 	return (cb) -> setTimeout cb, 0
 
 callTick = ->

@@ -1,6 +1,6 @@
+{array} = require 'utila'
 timeoutPool = require './pool/timeout'
 intervalPool = require './pool/interval'
-{array} = require 'utila'
 
 module.exports = class Waiter
 
@@ -12,7 +12,7 @@ module.exports = class Waiter
 
 		@_toRemoveFromIntervals = []
 
-	wait: (callTime, fn) ->
+	setTimeout: (callTime, fn) ->
 
 		item = timeoutPool.give callTime, fn
 
@@ -20,7 +20,11 @@ module.exports = class Waiter
 
 		return
 
-	_callFromSchedule: (t) ->
+	cancelTimeout: (fn) ->
+
+		throw Error "TODO: Waiter.cancelTimeout() to be implemented"
+
+	_callTimeouts: (t) ->
 
 		return if @_timeouts.length < 1
 
@@ -42,20 +46,21 @@ module.exports = class Waiter
 
 	tick: (t) ->
 
-		@_callFromSchedule t
+		@_callTimeouts t
 
 		@_callIntervals t
 
 		return
 
-	every: (ms, fn, currentTimeInMs) ->
+	setInterval: (ms, fn, currentTimeInMs) ->
 
 		@_intervals.push intervalPool.give ms, currentTimeInMs, 0, fn
 
 		return
 
-	cancelEvery: (fn) ->
+	cancelInterval: (fn) ->
 
+		# todo: make this ID based
 		@_toRemoveFromIntervals.push fn
 
 		return

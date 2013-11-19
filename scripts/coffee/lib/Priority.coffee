@@ -10,13 +10,13 @@ module.exports = class Priority
 
 		@_toCancelFromEachTick = []
 
-	onNextTick: (fn) ->
+	nextTick: (fn) ->
 
 		@_singles.push fn
 
 		return
 
-	cancelFromNextTick: (fn) ->
+	cancelNextTick: (fn) ->
 
 		array.pluckOneItem @_singles, fn
 
@@ -36,13 +36,13 @@ module.exports = class Priority
 
 		return
 
-	onEachTick: (fn) ->
+	eachTick: (fn) ->
 
 		@_series.push fn
 
 		return
 
-	cancelFromEachTick: (fn) ->
+	cancelEachTick: (fn) ->
 
 		@_toCancelFromEachTick.push fn
 
