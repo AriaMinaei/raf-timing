@@ -7,6 +7,10 @@ module.exports = class Timing
 
 	self = @
 
+	@requestAnimationFrame: requestAnimationFrame
+
+	@cancelAnimationFrame: cancelAnimationFrame
+
 	constructor: ->
 
 		@nanoTime = 0
@@ -28,7 +32,6 @@ module.exports = class Timing
 			return
 
 		@_started = no
-
 
 		@_before = new Priority
 
