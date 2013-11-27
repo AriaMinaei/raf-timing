@@ -1,4 +1,4 @@
-{array} = require 'utila'
+array = require 'utila/scripts/js/lib/array'
 
 module.exports = class Priority
 

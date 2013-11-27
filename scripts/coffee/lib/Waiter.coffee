@@ -1,4 +1,4 @@
-{array} = require 'utila'
+array = require 'utila/scripts/js/lib/array'
 timeoutPool = require './pool/timeout'
 intervalPool = require './pool/interval'
 
