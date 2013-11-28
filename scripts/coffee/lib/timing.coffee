@@ -19,7 +19,7 @@ module.exports = class Timing
 
 		@speed = 1
 
-		@tickNumber
+		@tickNumber = 0
 
 		@_rafId = 0
 
