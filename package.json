@@ -2,7 +2,7 @@
   "name": "raf-timing",
   "version": "0.3.3",
   "description": "",
-  "main": "scripts/js/lib/Timing.js",
+  "main": "scripts/js/lib/timing.js",
   "dependencies": {
     "utila": "~0.2.0"
   },
